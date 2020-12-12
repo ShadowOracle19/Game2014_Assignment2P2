@@ -5,7 +5,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
-
+using TMPro;
 [System.Serializable]
 public enum ImpulseSounds
 {
@@ -43,7 +43,7 @@ public class PlayerBehaviour : MonoBehaviour
     public int health;
     public int lives;
     public BarController healthBar;
-    public Animator livesHUD;
+    public TextMeshProUGUI livesHUD;
 
     [Header("Dust Trail")]
     public ParticleSystem dustTrail;
@@ -70,7 +70,9 @@ public class PlayerBehaviour : MonoBehaviour
     private SpriteRenderer m_spriteRenderer;
     private Animator m_animator;
     private RaycastHit2D groundHit;
-    
+
+    public Game_Manager manager;
+
 
     // Start is called before the first frame update
     void Start()
@@ -88,11 +90,13 @@ public class PlayerBehaviour : MonoBehaviour
         sounds = GetComponents<AudioSource>();
 
         perlin = vcam1.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
+        PlayerPrefs.SetInt("Score", 0);
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
+        livesHUD.SetText(lives.ToString());
         _LookInFront();
         _isGroundBelow();
         _Move();
@@ -265,11 +269,24 @@ public class PlayerBehaviour : MonoBehaviour
 
         if (other.gameObject.CompareTag("Gem"))
         {
+            manager.addScore(10);
+            manager.CollectedHeart();
             other.gameObject.SetActive(false);
             HealDamage(10);
         }
-    }
 
+        
+    }
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        if (other.gameObject.CompareTag("Spike"))
+        {
+            if (Time.frameCount % 20 == 0)
+            {
+                TakeDamage(1);
+            }
+        }
+    }
     private void OnCollisionEnter2D(Collision2D other)
     {
         if (other.gameObject.CompareTag("Enemy"))
@@ -303,7 +320,9 @@ public class PlayerBehaviour : MonoBehaviour
             {
                 TakeDamage(1);
             }
+
         }
+        
     }
 
     public void LoseLife()
@@ -312,7 +331,7 @@ public class PlayerBehaviour : MonoBehaviour
 
         sounds[(int) ImpulseSounds.DIE].Play();
         
-        livesHUD.SetInteger("LivesState", lives);
+        
 
         if (lives > 0)
         {

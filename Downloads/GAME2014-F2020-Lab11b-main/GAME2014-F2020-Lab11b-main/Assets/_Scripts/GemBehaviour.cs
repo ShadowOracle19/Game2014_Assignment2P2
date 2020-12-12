@@ -8,7 +8,6 @@ public class GemBehaviour : MonoBehaviour
     public bool isGrounded;
     public Vector3 groundLevel;
     public Rigidbody2D rigidbody2D;
-
     // Start is called before the first frame update
     void Start()
     {
